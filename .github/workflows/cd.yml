@@ -9,17 +9,17 @@ on:
             GSI:
                 description: "GSI Image Download Link"
                 required: true
-                default: "https://github.com/cawilliamson/treble_voltage/releases/download/4.5-20250717.114637/VoltageOS-microg-arm64-ab-4.5-20250717.114637-UNOFFICIAL.img.xz"
+                default: "https://sourceforge.net/projects/andyyan-gsi/files/lineage-20-td/History/lineage-20.0-20240818-UNOFFICIAL-arm64_bvN.img.xz"
                 type: string
             NAME:
                 description: "ROM Name"
                 required: true
-                default: "VoltageOS-arm64-ab-microg-4.5-a03.7z"
+                default: "lineage-20.0-a03.zip"
                 type: string
             VENDOR:
                 description: "Vendor Image Download Link"
                 required: true
-                default: "https://download937.mediafire.com/56f7fw8r15zgAmSxXwQu15MKxt4OIOi3Sl3SwwzIxpQpYxcDtqQTdVPy_K5mMrGTHvOguGmisZi9HBzNiCkgse_r_bR92O9W-1ypUx90dFK1DN6iqyAOEVB2usGGn0Benoe_3bu5HkPNzZQ44JzZlS6VOtX9K89dCmhaTFwon9jpyLbm/dvjvj8sghw16dte/vendor.img"
+                default: "https://github.com/RodrigoRoze/a035m-files/releases/download/files/vendor.img"
                 type: string
 
 jobs:
@@ -113,8 +113,8 @@ jobs:
                   echo "Creating tar archive..."
                   tar -cf super.tar super.img
 
-                  echo "Compressing to 7z..."
-                  7z a -t7z -mx=3 "${{ github.event.inputs.NAME }}" super.tar
+                  echo "Compressing to zip..."
+                  zip ${{ github.event.inputs.NAME }} super.tar
 
                   rm -f super.img super.tar
                   echo "Final ROM package:"
@@ -129,7 +129,7 @@ jobs:
 
                   **Installation Instructions:**
                   1. Download the ROM file
-                  2. Extract the 7z archive
+                  2. Extract the zip archive
                   3. Flash using Odin, Heimdall or similar tool
                   4. Reboot and enjoy :)
 
