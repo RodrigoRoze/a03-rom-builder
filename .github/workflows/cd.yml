@@ -41,22 +41,75 @@ jobs:
             - name: Download and Extract GSI
               run: |
                   cd lpbinary/binary
+                  
+                  # Download GSI file
+                  echo "Downloading GSI image..."
                   wget -q --show-progress "${{ github.event.inputs.GSI }}" -O gsi_image
+                  
+                  echo "File information:"
+                  file gsi_image
+                  ls -la gsi_image
+                  
+                  # Extract based on file extension and content
                   echo "Extracting GSI..."
-                  FILE_TYPE=$(file -b gsi_image | awk '{print $1}')
-                  if [[ "$FILE_TYPE" == 7-zip ]]; then
-                    atool --format=7z --extract gsi_image
+                  if [[ "${{ github.event.inputs.GSI }}" == *.xz ]]; then
+                      echo "Detected XZ compression"
+                      xz -d gsi_image
+                      # After decompression, the file will be without .xz extension
+                      GSI_EXTRACTED="gsi_image"
+                  elif [[ "${{ github.event.inputs.GSI }}" == *.7z ]]; then
+                      echo "Detected 7Z compression"
+                      7z x gsi_image
+                  elif [[ "${{ github.event.inputs.GSI }}" == *.zip ]]; then
+                      echo "Detected ZIP compression"
+                      unzip gsi_image
+                  elif [[ "${{ github.event.inputs.GSI }}" == *.gz ]]; then
+                      echo "Detected GZIP compression"
+                      gunzip gsi_image
+                      GSI_EXTRACTED="gsi_image"
                   else
-                    atool --format=$FILE_TYPE --extract gsi_image
+                      # Try to detect by file content
+                      FILE_TYPE=$(file -b gsi_image)
+                      echo "File type detected: $FILE_TYPE"
+                      
+                      if [[ "$FILE_TYPE" == *"XZ compressed"* ]]; then
+                          echo "Extracting with xz..."
+                          xz -d gsi_image
+                          GSI_EXTRACTED="gsi_image"
+                      elif [[ "$FILE_TYPE" == *"7-zip"* ]]; then
+                          echo "Extracting with 7z..."
+                          7z x gsi_image
+                      elif [[ "$FILE_TYPE" == *"gzip"* ]]; then
+                          echo "Extracting with gunzip..."
+                          gunzip gsi_image
+                          GSI_EXTRACTED="gsi_image"
+                      elif [[ "$FILE_TYPE" == *"Zip"* ]]; then
+                          echo "Extracting with unzip..."
+                          unzip gsi_image
+                      else
+                          echo "Trying generic extraction with atool..."
+                          atool --extract gsi_image
+                      fi
                   fi
+                  
+                  echo "Contents after extraction:"
+                  ls -la
+                  
+                  # Find the .img file
                   IMG_FILE=$(find . -name "*.img" -type f | head -1)
+                  
                   if [ -z "$IMG_FILE" ]; then
-                    echo "Error: No .img file found after extraction!"
-                    ls -la
-                    exit 1
+                      echo "Error: No .img file found after extraction!"
+                      echo "Files in directory:"
+                      find . -type f
+                      exit 1
                   fi
-
+                  
+                  echo "Found IMG file: $IMG_FILE"
                   mv "$IMG_FILE" system.img
+                  
+                  echo "System image ready:"
+                  ls -la system.img
 
             - name: Download Required Images
               run: |
@@ -73,10 +126,13 @@ jobs:
             - name: Verify Images
               run: |
                   cd lpbinary/binary
+                  echo "Verifying downloaded images..."
                   for img in system.img vendor.img product.img system_ext.img; do
                     if [ ! -f "$img" ]; then
                       echo "Error: $img not found!"
                       exit 1
+                    else
+                      echo "$img: $(stat -c%s $img) bytes"
                     fi
                   done
 
@@ -88,6 +144,12 @@ jobs:
                   VENDOR_SIZE=$(stat -c%s vendor.img)
                   PRODUCT_SIZE=$(stat -c%s product.img)
                   SYSTEM_EXT_SIZE=$(stat -c%s system_ext.img)
+
+                  echo "Image sizes:"
+                  echo "System: $SYSTEM_SIZE bytes"
+                  echo "Vendor: $VENDOR_SIZE bytes"
+                  echo "Product: $PRODUCT_SIZE bytes"
+                  echo "System_ext: $SYSTEM_EXT_SIZE bytes"
 
                   ./lpmake --metadata-size 65536 \
                            --super-name super \
@@ -106,6 +168,7 @@ jobs:
                            --output super.img
 
                   echo "Super image created successfully!"
+                  ls -la super.img
 
             - name: Package ROM
               run: |
@@ -118,6 +181,7 @@ jobs:
 
                   rm -f super.img super.tar
                   echo "Final ROM package:"
+                  ls -la ${{ github.event.inputs.NAME }}
 
             - name: Generate Release Notes
               id: release_notes
