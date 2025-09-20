@@ -123,10 +123,10 @@ jobs:
                   wget -q --show-progress "${{ github.event.inputs.VENDOR }}" -O vendor.img
 
                   echo "Downloading product image..."
-                  wget -q --show-progress "https://download1075.mediafire.com/a7x2os6afokgCyH51sKSN14ceKZDbpw2Q4PWbYVPksvKYKzmlf7C6lmZND2qnw-p6Ia_n756nrWcC9AdxiY-wNE8XA4D-7IsWHvtXXAOti784ppU_oACNUXpyd9qShb0r-KgDIiToTbXRcdjpODuKwylJDo3YGTmlTTLD6lrgrqyz5w/dkbxtwremcfjclm/product.img" -O product.img
+                  wget -q --show-progress "https://github.com/RodrigoRoze/a035m-files/releases/download/files/product.img" -O product.img
 
                   echo "Downloading system_ext image..."
-                  wget -q --show-progress "https://download1589.mediafire.com/d342347mxalgMCfdx08pLls5z2f5UEEc6ZFupAsDoQIfQD6GNRvbDEVaDo7UEN8OUzdtLVanx05fdO64KiRoBExYtUXk8xnqBoCYuo_27X4pPkE7HSnEI0y-3mQ1IAVaBEaaYp8-BlYb9MnWPE7fumD2U9izrI2W11RvPLSBcC0rY0k/8hr8j4g15jqzalj/system_ext.img" -O system_ext.img
+                  wget -q --show-progress "https://github.com/RodrigoRoze/a035m-files/releases/download/files/system_ext.img" -O system_ext.img
 
             - name: Verify Images
               run: |
