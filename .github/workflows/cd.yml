@@ -94,18 +94,24 @@ jobs:
                   echo "Contents after extraction:"
                   ls -la
                   
-                  # Find the .img file
+                  # Find the .img file or the extracted file
                   IMG_FILE=$(find . -name "*.img" -type f | head -1)
                   
                   if [ -z "$IMG_FILE" ]; then
-                      echo "Error: No .img file found after extraction!"
-                      echo "Files in directory:"
-                      find . -type f
-                      exit 1
+                      # Check if gsi_image exists and is the extracted file
+                      if [ -f "gsi_image" ]; then
+                          echo "Found extracted file: gsi_image (renaming to system.img)"
+                          mv gsi_image system.img
+                      else
+                          echo "Error: No .img file found after extraction!"
+                          echo "Files in directory:"
+                          find . -type f
+                          exit 1
+                      fi
+                  else
+                      echo "Found IMG file: $IMG_FILE"
+                      mv "$IMG_FILE" system.img
                   fi
-                  
-                  echo "Found IMG file: $IMG_FILE"
-                  mv "$IMG_FILE" system.img
                   
                   echo "System image ready:"
                   ls -la system.img
