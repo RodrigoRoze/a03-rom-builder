@@ -53,10 +53,9 @@ jobs:
                   # Extract based on file extension and content
                   echo "Extracting GSI..."
                   if [[ "${{ github.event.inputs.GSI }}" == *.xz ]]; then
-                      echo "Detected XZ compression"
-                      xz -d gsi_image
-                      # After decompression, the file will be without .xz extension
-                      GSI_EXTRACTED="gsi_image"
+                      echo "Detected XZ compression from URL"
+                      mv gsi_image gsi_image.xz
+                      xz -d gsi_image.xz
                   elif [[ "${{ github.event.inputs.GSI }}" == *.7z ]]; then
                       echo "Detected 7Z compression"
                       7z x gsi_image
@@ -65,24 +64,24 @@ jobs:
                       unzip gsi_image
                   elif [[ "${{ github.event.inputs.GSI }}" == *.gz ]]; then
                       echo "Detected GZIP compression"
-                      gunzip gsi_image
-                      GSI_EXTRACTED="gsi_image"
+                      mv gsi_image gsi_image.gz
+                      gunzip gsi_image.gz
                   else
                       # Try to detect by file content
                       FILE_TYPE=$(file -b gsi_image)
                       echo "File type detected: $FILE_TYPE"
                       
                       if [[ "$FILE_TYPE" == *"XZ compressed"* ]]; then
-                          echo "Extracting with xz..."
-                          xz -d gsi_image
-                          GSI_EXTRACTED="gsi_image"
+                          echo "Extracting XZ by content detection..."
+                          mv gsi_image gsi_image.xz
+                          xz -d gsi_image.xz
                       elif [[ "$FILE_TYPE" == *"7-zip"* ]]; then
                           echo "Extracting with 7z..."
                           7z x gsi_image
                       elif [[ "$FILE_TYPE" == *"gzip"* ]]; then
                           echo "Extracting with gunzip..."
-                          gunzip gsi_image
-                          GSI_EXTRACTED="gsi_image"
+                          mv gsi_image gsi_image.gz
+                          gunzip gsi_image.gz
                       elif [[ "$FILE_TYPE" == *"Zip"* ]]; then
                           echo "Extracting with unzip..."
                           unzip gsi_image
